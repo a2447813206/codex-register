@@ -360,3 +360,56 @@ def singbox_test_api():
         })
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
+
+# ─── 固定代理检测 ───
+
+@api_bp.route("/proxy/test", methods=["POST"])
+def proxy_test_api():
+    """测试固定代理的连通性，返回 IP、地区、延迟"""
+    from config_loader import _detect_proxy_ip_info
+    import time as _time
+
+    body = request.get_json(force=True) or {}
+    proxy = (body.get("proxy") or "").strip()
+
+    if not proxy:
+        # 未传则读取已保存的全局配置
+        cfg = read_config()
+        proxy = (cfg.get("proxy") or "").strip()
+    
+    if not proxy:
+        return jsonify({"ok": False, "error": "未提供代理地址，且 config.json 中也未配置"}), 400
+
+    result = {"ok": False, "proxy": proxy}
+    start_ts = _time.time()
+
+    try:
+        # 检测 IP 信息
+        ip_info = _detect_proxy_ip_info(proxy)
+        elapsed_ms = int((_time.time() - start_ts) * 1000)
+        
+        # 判断是否成功（不包含"检测失败"或"超时"）
+        success = "检测失败" not in ip_info and "超时" not in ip_info
+        
+        result.update({
+            "ok": success,
+            "ip_info": ip_info,
+            "elapsed_ms": elapsed_ms,
+        })
+
+        if success:
+            result["message"] = f"代理可用 ({elapsed_ms}ms)"
+        else:
+            result["message"] = f"代理异常: {ip_info}"
+
+    except Exception as e:
+        elapsed_ms = int((_time.time() - start_ts) * 1000)
+        result.update({
+            "ok": False,
+            "ip_info": "",
+            "elapsed_ms": elapsed_ms,
+            "message": str(e),
+        })
+
+    return jsonify(result)

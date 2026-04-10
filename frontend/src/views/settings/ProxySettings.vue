@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { parseSingboxSub, startSingbox, stopSingbox, getSingboxStatus, testSingboxNodes } from '@/lib/api'
 import { useConfigStore } from '@/store/config'
 import { toast } from 'vue-sonner'
-import { Play, TestTube2 } from 'lucide-vue-next'
+import { Play, TestTube2, Network, CheckCircle2, XCircle } from 'lucide-vue-next'
 
 const configStore = useConfigStore()
 
@@ -26,10 +26,14 @@ const singboxApiPort = ref(9090)
 const isParsing = ref(false)
 const isSaving = ref(false)
 const isTesting = ref(false)
+const isTestingFixed = ref(false)
 const parsedNodes = ref<string[]>([])
 const singboxRunning = ref(false)
 const testResults = ref<any[]>([])
 const currentNode = ref<string | null>(null)
+
+// 固定代理检测结果
+const fixedProxyTestResult = ref<any>(null)
 
 type ProxySettingsDraft = {
   proxyMode: string
@@ -199,6 +203,27 @@ const handleTest = async () => {
   }
 }
 
+// 固定代理连通性 + IP 检测
+const handleTestFixedProxy = async () => {
+  if (!fixedProxy.value.trim()) return toast.error('请先填写代理地址')
+  isTestingFixed.value = true
+  fixedProxyTestResult.value = null
+  try {
+    const { data } = await testFixedProxy(fixedProxy.value.trim())
+    fixedProxyTestResult.value = data
+    if (data.ok) {
+      toast.success(data.message || '代理可用')
+    } else {
+      toast.error(data.message || '代理不可用')
+    }
+  } catch (err: any) {
+    fixedProxyTestResult.value = { ok: false, message: err.message, ip_info: '', elapsed_ms: 0 }
+    toast.error('检测失败: ' + (err.message || '网络异常'))
+  } finally {
+    isTestingFixed.value = false
+  }
+}
+
 const handleSave = async () => {
   isSaving.value = true
   try {
@@ -238,6 +263,45 @@ const handleSave = async () => {
             <Label>HTTP / SOCKS5 代理地址</Label>
             <Input v-model="fixedProxy" placeholder="http://user:pass@host:port 或 socks5://user:pass@host:port" />
             <p class="text-sm text-muted-foreground">全局注册进程发出的所有请求都会通过此单个节点。</p>
+          </div>
+
+          <!-- 固定代理测试按钮 -->
+          <div class="flex items-center gap-3">
+            <Button variant="outline" size="sm" @click="handleTestFixedProxy" :disabled="isTestingFixed || !fixedProxy.trim()" class="gap-1.5">
+              <Network class="h-3.5 w-3.5" />
+              {{ isTestingFixed ? '检测中...' : '测试代理' }}
+            </Button>
+            <span v-if="isTestingFixed" class="text-sm text-muted-foreground animate-pulse">正在检测代理连通性...</span>
+          </div>
+
+          <!-- 检测结果卡片 -->
+          <div
+            v-if="fixedProxyTestResult"
+            class="border rounded-lg p-4"
+            :class="fixedProxyTestResult.ok ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/20' : 'border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20'"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <CheckCircle2 v-if="fixedProxyTestResult.ok" class="h-4 w-4 text-emerald-500" />
+              <XCircle v-else class="h-4 w-4 text-red-500" />
+              <span class="text-sm font-semibold" :class="fixedProxyTestResult.ok ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'">
+                {{ fixedProxyTestResult.ok ? '代理可用' : '代理异常' }}
+              </span>
+              <span v-if="fixedProxyTestResult.elapsed_ms" class="ml-auto text-xs font-mono text-muted-foreground">
+                {{ fixedProxyTestResult.elapsed_ms }}ms
+              </span>
+            </div>
+
+            <!-- IP 信息 -->
+            <div v-if="fixedProxyTestResult.ip_info" class="mt-2 pl-6">
+              <code class="text-sm font-mono bg-black/5 dark:bg-white/10 px-2 py-1 rounded break-all">
+                {{ fixedProxyTestResult.ip_info }}
+              </code>
+            </div>
+
+            <!-- 错误信息 -->
+            <p v-else-if="!fixedProxyTestResult.ok && fixedProxyTestResult.message" class="mt-2 pl-6 text-sm text-red-600 dark:text-red-400">
+              {{ fixedProxyTestResult.message }}
+            </p>
           </div>
         </div>
       </TabsContent>

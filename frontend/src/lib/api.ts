@@ -50,4 +50,8 @@ export const getSingboxStatus = (url?: string) =>
 export const testSingboxNodes = (url: string, testUrl?: string) =>
   api.post('/singbox/test', { url, test_url: testUrl })
 
+// ── 固定代理检测 ──
+export const testFixedProxy = (proxy?: string) =>
+  api.post('/proxy/test', { proxy })
+
 export default api
