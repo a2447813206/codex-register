@@ -1,0 +1,20 @@
+[
+  {
+    "id": "msg-1775794707261-sae56i",
+    "from": "team-lead",
+    "to": "cleanup-api-py",
+    "type": "message",
+    "content": "请报告你的完成状态。",
+    "timestamp": "2026-04-10T04:18:27.261Z",
+    "read": true
+  },
+  {
+    "id": "shutdown-1775794797581",
+    "from": "team-lead",
+    "to": "cleanup-api-py",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1775794797581\",\"reason\":\"清理完成，请关闭。\",\"from\":\"team-lead\",\"timestamp\":\"2026-04-10T04:19:57.581Z\"}",
+    "timestamp": "2026-04-10T04:19:57.581Z",
+    "read": true
+  }
+]

@@ -1,0 +1,20 @@
+# Codex Register 项目依赖
+# Python 3.7+
+
+# Web 框架
+flask>=2.3.0
+
+# HTTP 客户端
+requests>=2.28.0
+
+# HTTP 客户端（支持 TLS 指纹伪装）
+curl_cffi>=0.5.0
+
+# YAML 解析（Clash / Mihomo 订阅）
+PyYAML>=6.0.0
+
+# SOCKS5 代理支持（requests 通过 PySocks 实现 socks5:// 代理）
+PySocks>=1.7.0
+
+# Playwright 无头浏览器（用于 Sentinel Turnstile 挑战，可选依赖）
+playwright>=1.40.0

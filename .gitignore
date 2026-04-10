@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+
+# 敏感配置（包含代理密码/邮箱/API Key）
+config.json
+ak.txt
+rk.txt
+
+# 已注册账号数据
+registered_accounts.csv
+registered_accounts.txt
+codex_tokens/
+invite_tracker.json
+keepalive_history.json
+singbox_nodes_cache.json
+
+# 日志
+logs/
+*.log
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# singbox 二进制（太大）
+core/

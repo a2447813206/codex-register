@@ -1,0 +1,20 @@
+[
+  {
+    "id": "msg-1775794708271-c2q5lw",
+    "from": "team-lead",
+    "to": "cleanup-config-loader",
+    "type": "message",
+    "content": "请报告你的完成状态。",
+    "timestamp": "2026-04-10T04:18:28.271Z",
+    "read": true
+  },
+  {
+    "id": "shutdown-1775794798002",
+    "from": "team-lead",
+    "to": "cleanup-config-loader",
+    "type": "shutdown_request",
+    "content": "{\"type\":\"shutdown_request\",\"request_id\":\"shutdown-1775794798002\",\"reason\":\"清理完成，请关闭。\",\"from\":\"team-lead\",\"timestamp\":\"2026-04-10T04:19:58.002Z\"}",
+    "timestamp": "2026-04-10T04:19:58.002Z",
+    "read": true
+  }
+]
