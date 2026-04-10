@@ -1,9 +1,9 @@
 # Codex Register
-
+楼主不是搞技术的有问题修下！！
 ChatGPT / OpenAI Codex 批量账号注册与管理工具。纯协议实现，无需浏览器（注册流程），可选 Playwright 支持 Turnstile 验证。
 
 > 邮箱 API 购买地址：https://royp.online/
-
+有问题联系QQ2447813206
 ---
 
 ## 功能特性
