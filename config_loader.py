@@ -1141,12 +1141,12 @@ def _detect_proxy_ip_info(proxy=None):
     # 标准化代理格式
     proxy = _normalize_proxy(proxy)
     
-    # 免费 IP 检测 API 列表（按优先级排序）
+    # 免费 IP 检测 API 列表（按优先级排序，必须带完整协议前缀）
     apis = [
-        ("ip-api.com/json", None),           # 无需认证，支持代理透传，返回中文地区名
-        ("ipinfo.io/json", None),            # 备选，返回英文地区名
-        ("api.ip.sb/geoip", None),           # 备选
-        ("ifconfig.me/ip", "ip_only"),       # 最简：仅返回纯 IP
+        ("http://ip-api.com/json", None),       # 无需认证，支持代理透传，返回中文地区名
+        ("https://ipinfo.io/json", None),        # 备选，返回英文地区名
+        ("https://api.ip.sb/geoip", None),      # 备选
+        ("https://ifconfig.me/ip", "ip_only"),   # 最简：仅返回纯 IP
     ]
 
     session = curl_requests.Session(impersonate="chrome131", verify=False)
