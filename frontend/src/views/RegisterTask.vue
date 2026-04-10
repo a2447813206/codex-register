@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { getTaskStatus, startTask, stopTask } from '@/lib/api'
+import { getTaskStatus, startTask, stopTask, getConfig } from '@/lib/api'
+import { useConfigStore } from '@/store/config'
 import { toast } from 'vue-sonner'
+
+const configStore = useConfigStore()
 
 const count = ref(1)
 const workers = ref(1)
@@ -31,7 +34,21 @@ const refreshTaskStatus = async () => {
 
 const handleStart = async () => {
   try {
-    await startTask(count.value, workers.value)
+    // 从已保存的 config 中读取代理地址，传给后端确保不走直连
+    const cfg = configStore.config || {}
+    const proxyMode = cfg.proxy_mode || 'fixed'
+    let proxy = ''
+    // fixed 模式：直接取 proxy 字段
+    if (proxyMode === 'fixed') {
+      proxy = (cfg.proxy || '').trim()
+    }
+    // singbox 模式：使用本地 singbox 监听端口
+    else if (proxyMode === 'singbox') {
+      const listenPort = cfg.singbox_listen_port || 10810
+      proxy = `http://127.0.0.1:${listenPort}`
+    }
+
+    await startTask(count.value, workers.value, proxy || undefined)
     running.value = true
     toast.success('注册任务已启动')
     await refreshTaskStatus()
