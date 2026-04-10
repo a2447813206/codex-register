@@ -1,0 +1,13 @@
+=== Proxy Verification ===
+Proxy: 
+
+[Step 1] curl_cffi HTTP request...
+  [OK] HTTP | status=200 | IP=76.209.9.65
+
+[Step 2] Playwright browser launch...
+  [FAIL] Playwright error: 'NoneType' object is not subscriptable
+
+[Step 3] Sentinel Turnstile Token...
+  [WARN] Turnstile fallback: ImportError: cannot import name 'get_turnstile_token' from 'playwright_sentinel' (C:\Users\Administrator\Desktop\25300fd1427140c876a7064671034cc5dc025c23\playwright_sentinel.py)
+
+=== Done ===

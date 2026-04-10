@@ -82,7 +82,11 @@ def start_task_api():
     body = request.get_json(force=True) or {}
     count = int(body.get("count", 1))
     workers = int(body.get("workers", 1))
-    proxy = body.get("proxy", "").strip() or None
+    # 前端传来的 proxy 为空时，回退读取 config.json 里已保存的全局代理配置
+    proxy = body.get("proxy", "").strip()
+    if not proxy:
+        cfg = read_config()
+        proxy = (cfg.get("proxy") or "").strip() or None
     
     ok, err = start_registration_task(count, workers, proxy)
     if ok:

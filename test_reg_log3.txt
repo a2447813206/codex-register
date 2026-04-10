@@ -1,0 +1,7 @@
+============================================================
+ FULL REGISTRATION TEST (1 account)
+============================================================
+
+[Pre-check] Proxy connectivity...
+  Proxy: http://user-sub.aaa11123-session-G8Yesj:13457813351a@proxy.haiwaiip.net:1470
+  [FAIL] Failed to perform, curl: (28) Connection timed out after 15009 milliseconds. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.

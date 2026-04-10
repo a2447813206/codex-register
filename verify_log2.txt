@@ -1,0 +1,17 @@
+=== ������֤ ===
+����: user-sub.aaa11123-session-G8Yesj:13457813351a@proxy.haiwaiip.net:1470
+
+[Step 1] curl_cffi HTTP �������...
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\25300fd1427140c876a7064671034cc5dc025c23\verify_proxy.py", line 18, in <module>
+    print(f"  \u2705 HTTP OK | ״̬��: {r.status_code} | IP: {r.json().get('origin', '?')}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 2: illegal multibyte sequence
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\25300fd1427140c876a7064671034cc5dc025c23\verify_proxy.py", line 20, in <module>
+    print(f"  \u274c HTTP ʧ��: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'gbk' codec can't encode character '\u274c' in position 2: illegal multibyte sequence

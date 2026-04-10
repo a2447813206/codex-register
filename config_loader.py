@@ -2795,10 +2795,15 @@ def run_batch(total_accounts: int = 4, output_file="registered_accounts.txt",
             print("❌ 错误: 未设置 DUCKMAIL_BEARER")
             return
 
+    # 代理回退：如果未指定代理，使用 config.json 里的全局默认代理
+    if not proxy:
+        proxy = DEFAULT_PROXY
+
     actual_workers = min(max_workers, total_accounts)
     print(f"\n{'#'*60}")
     print(f"  ChatGPT 批量自动注册 (纯协议版)")
     print(f"  注册数量: {total_accounts} | 并发数: {actual_workers}")
+    print(f"  网络代理: {proxy or '(直连/无代理)'}")  # 打印实际使用的代理，方便排查
     mail_info = {"duckmail": DUCKMAIL_API_BASE, "cloudflare": CF_MAIL_API_BASE, "yyds_mail": YYDS_MAIL_API_BASE, "mailapi_icu": MAILAPI_ICU_EMAIL}
     print(f"  邮箱渠道: {MAIL_PROVIDER} | {mail_info.get(MAIL_PROVIDER, 'N/A')}")
     if MAIL_PROVIDER == "yyds_mail" and YYDS_MAIL_DOMAINS:

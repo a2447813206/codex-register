@@ -1,0 +1,10 @@
+============================================================
+ FULL REGISTRATION TEST (1 account)
+============================================================
+
+[Pre-check] Proxy connectivity...
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\25300fd1427140c876a7064671034cc5dc025c23\test_register_one.py", line 14, in <module>
+    cfg = json.load(f)
+          ^^^^
+NameError: name 'json' is not defined. Did you forget to import 'json'?
