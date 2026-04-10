@@ -12,5 +12,5 @@ app = create_app()
 if __name__ == "__main__":
     multiprocessing.freeze_support()  # Windows 需要
     
-    print("[INFO] ChatGPT 注册管理面板启动: http://localhost:5001")
-    app.run(host="127.0.0.1", port=5001, debug=False, threaded=True)
+    print("[INFO] ChatGPT 注册管理面板启动: http://0.0.0.0:5001")
+    app.run(host="0.0.0.0", port=5001, debug=False, threaded=True)

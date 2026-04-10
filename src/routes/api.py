@@ -82,11 +82,15 @@ def start_task_api():
     body = request.get_json(force=True) or {}
     count = int(body.get("count", 1))
     workers = int(body.get("workers", 1))
-    # 前端传来的 proxy 为空时，回退读取 config.json 里已保存的全局代理配置
-    proxy = body.get("proxy", "").strip()
-    if not proxy:
+    proxy = body.get("proxy", "").strip() or None
+    # 前端没传 proxy 时，自动从 config.json 读取代理模式与地址
+    if proxy is None:
         cfg = read_config()
-        proxy = (cfg.get("proxy") or "").strip() or None
+        proxy_mode = cfg.get("proxy_mode", "fixed")
+        if proxy_mode == "singbox":
+            proxy = "singbox://"  # 标识符：run_batch 内部会走本地 SingBox 端口
+        else:
+            proxy = cfg.get("proxy", "").strip() or None
     
     ok, err = start_registration_task(count, workers, proxy)
     if ok:
