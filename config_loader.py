@@ -1062,6 +1062,63 @@ def save_to_csv(email: str, password: str, dm_password: str = "", oauth_status: 
 
 # ================= ChatGPTRegister 核心类 =================
 
+def _detect_proxy_ip_info(proxy=None):
+    """检测代理出口 IP 及地区信息
+
+    通过代理请求免费 IP 检测 API，返回格式化字符串用于日志显示。
+    多个 API 依次尝试，确保至少一个可用。
+
+    Returns:
+        str: 格式如 "203.0.113.50 | 美国 | 加利福尼亚"
+             失败时返回 "检测失败: 原因说明"
+    """
+    # 免费 IP 检测 API 列表（按优先级排序）
+    apis = [
+        ("ip-api.com/json", None),           # 无需认证，支持代理透传，返回中文地区名
+        ("ipinfo.io/json", None),            # 备选，返回英文地区名
+        ("api.ip.sb/geoip", None),           # 备选
+        ("ifconfig.me/ip", "ip_only"),       # 最简：仅返回纯 IP
+    ]
+
+    session = curl_requests.Session(impersonate="chrome131", verify=False)
+    if proxy:
+        session.proxies = {"http": proxy, "https": proxy}
+    session.headers.update({"User-Agent": "Mozilla/5.0"})
+
+    for url, mode in apis:
+        try:
+            resp = session.get(url, timeout=10)
+            if resp.status_code != 200:
+                continue
+
+            if mode == "ip_only":
+                ip = resp.text.strip()
+                return f"{ip} | 地区未知"
+
+            data = resp.json()
+            ip = data.get("query") or data.get("ip") or ""
+            if not ip:
+                continue
+
+            # 组装地区信息（优先中文）
+            country = data.get("country") or data.get("country_name") or ""
+            region = data.get("regionName") or data.get("region") or ""
+            city = data.get("city") or ""
+
+            if country or region:
+                location = " | ".join(filter(None, [country, region, city]))
+                return f"{ip} | {location}"
+
+            return f"{ip}"
+
+        except Exception as e:
+            continue
+
+    return "检测失败 (所有API超时)"
+
+
+# ================= ChatGPTRegister 核心类 =================
+
 class ChatGPTRegister:
     BASE = "https://chatgpt.com"
     AUTH = "https://auth.openai.com"
@@ -2684,6 +2741,19 @@ def _register_one(idx, total, proxy, output_file, stop_event=None):
 
         reg = ChatGPTRegister(proxy=proxy, tag=f"{idx}")
 
+        # 0. 检测代理出口 IP 及地区（每个线程每个号都检测一次）
+        with _print_lock:
+            print(f"\n[线程-{idx}] 正在检测出口 IP ...")
+        ip_info = _detect_proxy_ip_info(proxy)
+        with _print_lock:
+            print(f"[线程-{idx}] 出口 IP: {ip_info}")
+        # 同时通过 SSE 广播给前端 Web 面板
+        try:
+            from src.services.logger import broadcast_log
+            broadcast_log(f"[线程-{idx}] 出口 IP: {ip_info}")
+        except Exception:
+            pass
+
         # 1. 创建临时邮箱
         reg._print("[邮箱] 创建临时邮箱...")
         email, email_pwd, mail_token = reg.create_temp_email()
@@ -2701,6 +2771,7 @@ def _register_one(idx, total, proxy, output_file, stop_event=None):
         with _print_lock:
             print(f"\n{'='*60}")
             print(f"  [{idx}/{total}] 注册: {email}")
+            print(f"  出口 IP: {ip_info}")
             print(f"  ChatGPT密码: {chatgpt_password}")
             print(f"  邮箱密码: {email_pwd}")
             print(f"  姓名: {name} | 生日: {birthdate}")
