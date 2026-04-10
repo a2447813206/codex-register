@@ -261,8 +261,8 @@ const handleSave = async () => {
         <div class="space-y-4 max-w-xl">
           <div class="grid gap-2">
             <Label>HTTP / SOCKS5 代理地址</Label>
-            <Input v-model="fixedProxy" placeholder="http://user:pass@host:port 或 socks5://user:pass@host:port" />
-            <p class="text-sm text-muted-foreground">全局注册进程发出的所有请求都会通过此单个节点。</p>
+            <Input v-model="fixedProxy" placeholder="支持: http:// / socks5:// / host:port / user:pass@host:port" />
+            <p class="text-sm text-muted-foreground">支持多种格式自动识别：http:// / socks5:// / 纯 host:port / user:pass@host:port / IP:Port</p>
           </div>
 
           <!-- 固定代理测试按钮 -->
@@ -289,6 +289,17 @@ const handleSave = async () => {
               <span v-if="fixedProxyTestResult.elapsed_ms" class="ml-auto text-xs font-mono text-muted-foreground">
                 {{ fixedProxyTestResult.elapsed_ms }}ms
               </span>
+            </div>
+
+            <!-- 代理格式解析 -->
+            <div v-if="fixedProxyTestResult.parsed" class="mt-2 mb-3 pl-6 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>协议: <span class="font-mono font-medium text-foreground">{{ fixedProxyTestResult.parsed.scheme || '-' }}</span></span>
+              <span>地址: <span class="font-mono font-medium text-foreground">{{ fixedProxyTestResult.parsed.hostname }}{{ fixedProxyTestResult.parsed.port ? ':' + fixedProxyTestResult.parsed.port : '' }}</span></span>
+              <span>认证: <span class="font-medium" :class="fixedProxyTestResult.parsed.has_auth ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'">{{ fixedProxyTestResult.parsed.has_auth ? '已配置' : '无' }}</span></span>
+            </div>
+            <!-- 标准化后的完整地址（当与原始输入不同时显示） -->
+            <div v-if="fixedProxyTestResult.normalized && fixedProxyTestResult.normalized !== fixedProxyTestResult.proxy" class="mb-3 pl-6 text-xs text-muted-foreground">
+              标准化: <code class="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono">{{ fixedProxyTestResult.normalized }}</code>
             </div>
 
             <!-- IP 信息 -->

@@ -366,8 +366,14 @@ def singbox_test_api():
 
 @api_bp.route("/proxy/test", methods=["POST"])
 def proxy_test_api():
-    """测试固定代理的连通性，返回 IP、地区、延迟"""
-    from config_loader import _detect_proxy_ip_info
+    """测试固定代理的连通性，返回 IP、地区、延迟、格式解析
+    
+    支持任意格式的代理地址:
+      - http://user:pass@host:port
+      - socks5://user:pass@host:port
+      - host:port / user:pass@host:port / 1.2.3.4:8080 (自动补 http://)
+    """
+    from config_loader import _detect_proxy_ip_info, _parse_proxy_info, _normalize_proxy
     import time as _time
 
     body = request.get_json(force=True) or {}
@@ -381,11 +387,20 @@ def proxy_test_api():
     if not proxy:
         return jsonify({"ok": False, "error": "未提供代理地址，且 config.json 中也未配置"}), 400
 
-    result = {"ok": False, "proxy": proxy}
+    # 解析代理格式信息（用于前端展示）
+    parsed = _parse_proxy_info(proxy)
+    normalized = _normalize_proxy(proxy)
+
+    result = {
+        "ok": False,
+        "proxy": proxy,           # 原始输入
+        "normalized": normalized,  # 标准化后的完整 URL
+        "parsed": parsed,         # 解析出的各组件 (scheme/hostname/port/has_auth)
+    }
     start_ts = _time.time()
 
     try:
-        # 检测 IP 信息
+        # 检测 IP 信息（内部会自动标准化）
         ip_info = _detect_proxy_ip_info(proxy)
         elapsed_ms = int((_time.time() - start_ts) * 1000)
         

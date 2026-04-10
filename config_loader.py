@@ -1062,16 +1062,85 @@ def save_to_csv(email: str, password: str, dm_password: str = "", oauth_status: 
 
 # ================= ChatGPTRegister 核心类 =================
 
+def _normalize_proxy(proxy):
+    """统一代理地址格式，支持多种输入形式
+    
+    支持的输入格式:
+      - http://user:pass@host:port
+      - socks5://user:pass@host:port
+      - http://host:port
+      - socks5://host:port
+      - user:pass@host:port          → 自动补 http://
+      - host:port                    → 自动补 http://
+      - 1.2.3.4:8080               → 自动补 http://
+    
+    Returns:
+        str: 标准化后的代理 URL（含协议前缀），或空字符串
+    """
+    if not proxy:
+        return ""
+    
+    proxy = proxy.strip()
+    
+    # 已经有协议前缀，直接返回
+    if "://" in proxy:
+        return proxy
+    
+    # 纯 host:port 或 user:pass@host:port 格式，默认补 http 协议
+    return f"http://{proxy}"
+
+
+def _parse_proxy_info(proxy):
+    """解析代理地址的可读信息
+    
+    Returns:
+        dict: {
+            "scheme": "http" / "socks5" / ...,
+            "hostname": "...",
+            "port": "..." 或 "",
+            "username": "..." 或 "",
+            "has_auth": bool,
+            "raw": "原始字符串",
+        }
+    """
+    normalized = _normalize_proxy(proxy)
+    if not normalized:
+        return {"raw": proxy or "", "scheme": "", "hostname": "", "port": "", "has_auth": False}
+
+    from urllib.parse import urlparse
+    parsed = urlparse(normalized)
+    return {
+        "raw": proxy,
+        "scheme": parsed.scheme or "http",
+        "hostname": parsed.hostname or "",
+        "port": str(parsed.port) if parsed.port else "",
+        "username": parsed.username or "",
+        "has_auth": bool(parsed.username),
+    }
+
+
 def _detect_proxy_ip_info(proxy=None):
     """检测代理出口 IP 及地区信息
 
     通过代理请求免费 IP 检测 API，返回格式化字符串用于日志显示。
     多个 API 依次尝试，确保至少一个可用。
 
+    支持任意格式的代理地址（会自动标准化）。
+
+    Args:
+        proxy: 代理地址，支持以下格式:
+              http(s)://user:pass@host:port
+              socks5(h)://user:pass@host:port
+              user:pass@host:port (自动补 http://)
+              host:port (自动补 http://)
+
     Returns:
         str: 格式如 "203.0.113.50 | 美国 | 加利福尼亚"
              失败时返回 "检测失败: 原因说明"
     """
+    # 标准化代理格式
+    proxy = _normalize_proxy(proxy)
+    
     # 免费 IP 检测 API 列表（按优先级排序）
     apis = [
         ("ip-api.com/json", None),           # 无需认证，支持代理透传，返回中文地区名
@@ -1129,8 +1198,10 @@ class ChatGPTRegister:
         self.auth_session_logging_id = str(uuid.uuid4())
         self.impersonate, self.chrome_major, self.chrome_full, self.ua, self.sec_ch_ua = _random_chrome_version()
 
+        # 标准化代理格式（支持 host:port / user:pass@host:port / socks5:// 等多种格式）
+        self.proxy = _normalize_proxy(proxy)
+
         self.session = curl_requests.Session(impersonate=self.impersonate, verify=False)
-        self.proxy = proxy
         if self.proxy:
             self.session.proxies = {"http": self.proxy, "https": self.proxy}
 
